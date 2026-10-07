@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F1 Time Travel Simulator & Championship 2026</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- F1 Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background-color: #0b0e14;
+            color: #f3f4f6;
+        }
+
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .f1-red {
+            color: #e10600;
+        }
+
+        .bg-f1-red {
+            background-color: #e10600;
+        }
+
+        .border-f1-red {
+            border-color: #e10600;
+        }
+
+        .glass-panel {
+            background: rgba(18, 24, 38, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        /* Sector colors */
+        .sector-purple { background-color: rgba(168, 85, 247, 0.2); border-color: #a855f7; color: #c084fc; }
+        .sector-green  { background-color: rgba(34, 197, 94, 0.2);  border-color: #22c55e; color: #4ade80; }
+        .sector-yellow { background-color: rgba(234, 179, 8, 0.2);  border-color: #eab308; color: #fde047; }
+        .sector-red    { background-color: rgba(239, 68, 68, 0.2);   border-color: #ef4444; color: #fca5a5; }
+
+        /* F1 Logo Filling Effect */
+        .f1-logo-mask {
+            fill: #2a3447;
+            transition: fill 0.2s ease;
+        }
+        .f1-logo-filled {
+            fill: #e10600;
+        }
+
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0b0e14; }
+        ::-webkit-scrollbar-thumb { background: #2a3447; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #e10600; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between overflow-x-hidden bg-[#0b0e14]">
+
+    <!-- NAVIGATION HEADER -->
+    <header class="bg-gray-950 border-b border-gray-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="bg-f1-red text-white p-2 rounded-lg font-orbitron font-black text-xl tracking-wider shadow-lg shadow-red-600/30">
+                    F1
+                </div>
+                <div>
+                    <h1 class="font-orbitron text-lg sm:text-xl font-bold tracking-wide text-white flex items-center gap-2">
+                        PADDOCK TELEMETRY HUB 2026
+                    </h1>
+                    <p class="text-xs text-gray-400">Datos Oficiales y Simulador Histórico de Fórmula 1</p>
+                </div>
+            </div>
+
+            <!-- TAB CONTROLS -->
+            <nav class="flex space-x-1 sm:space-x-2 bg-gray-900 p-1.5 rounded-xl border border-gray-800 text-xs sm:text-sm font-semibold">
+                <button onclick="switchTab('sim')" id="tab-sim" class="tab-btn px-3 sm:px-4 py-2 rounded-lg transition-all bg-f1-red text-white shadow">
+                    <i class="fa-solid fa-gauge-high mr-1.5"></i> 1. Simulador de Épocas
+                </button>
+                <button onclick="switchTab('standings')" id="tab-standings" class="tab-btn px-3 sm:px-4 py-2 rounded-lg transition-all text-gray-400 hover:text-white hover:bg-gray-800">
+                    <i class="fa-solid fa-trophy mr-1.5"></i> 2. Clasificación Pilotos 2026
+                </button>
+                <button onclick="switchTab('calendar')" id="tab-calendar" class="tab-btn px-3 sm:px-4 py-2 rounded-lg transition-all text-gray-400 hover:text-white hover:bg-gray-800">
+                    <i class="fa-solid fa-calendar-days mr-1.5"></i> 3. Calendario 2026
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- MAIN BODY CONTAINER -->
+    <main class="max-w-7xl mx-auto px-4 py-6 w-full flex-grow">
+
+        <!-- TAB 1: TIME TRAVEL SIMULATOR -->
+        <section id="content-sim" class="space-y-6">
+            
+            <!-- Header Banner -->
+            <div class="glass-panel p-4 rounded-xl border-l-4 border-f1-red flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h2 class="font-orbitron text-xl font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-clock-rotate-left text-f1-red"></i>
+                        SIMULADOR COMPARATIVO DE ÉPOCAS HISTÓRICAS VS 2026/27
+                    </h2>
+                    <p class="text-sm text-gray-400 mt-0.5">
+                        Selecciona un periodo histórico, un circuito legendario y un monoplaza para enfrentarlo a la nueva era 2026 con aerodinámica activa y e-fuels.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Controls Grid: Eras, Circuits, Cars -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Selector 1: ERA -->
+                <div class="glass-panel p-4 rounded-xl space-y-3">
+                    <label class="block font-orbitron text-xs font-bold text-red-400 uppercase tracking-wider">
+                        <i class="fa-solid fa-hourglass-start mr-1"></i> 1. Selecciona la Era
+                    </label>
+                    <select id="era-select" onchange="onEraChange()" class="w-full bg-gray-900 border border-gray-700 text-white rounded-lg p-2.5 text-sm font-semibold focus:ring-2 focus:ring-f1-red focus:border-transparent outline-none">
+                        <option value="inicios">Era de Inicios (1950 - 1960)</option>
+                        <option value="2000s" selected>Era 2000s (Motores V10 / V8)</option>
+                        <option value="moderna">Era Actual / Híbrida (Reglamento 2026/27)</option>
+                    </select>
+                    <p id="era-desc" class="text-xs text-gray-400 leading-relaxed min-h-[40px]">
+                        Motores V10 atmosféricos rugiendo a 19,000 RPM, sin restricciones híbridas y peso ligero.
+                    </p>
+                </div>
+
+                <!-- Selector 2: CIRCUITO -->
+                <div class="glass-panel p-4 rounded-xl space-y-3">
+                    <label class="block font-orbitron text-xs font-bold text-red-400 uppercase tracking-wider">
+                        <i class="fa-solid fa-road mr-1"></i> 2. Circuito Emblemático
+                    </label>
+                    <select id="circuit-select" onchange="onCircuitChange()" class="w-full bg-gray-900 border border-gray-700 text-white rounded-lg p-2.5 text-sm font-semibold focus:ring-2 focus:ring-f1-red focus:border-transparent outline-none">
+                        <!-- Populated via JS -->
+                    </select>
+                    <div class="bg-gray-950/80 p-3 rounded-lg border border-gray-800 flex justify-between items-center text-xs">
+                        <span class="text-gray-400"><i class="fa-solid fa-ruler-horizontal text-f1-red mr-1"></i> Longitud del Trazado:</span>
+                        <span id="circuit-length" class="font-mono text-white font-bold bg-gray-900 px-2.5 py-1 rounded border border-gray-700">5.793 km</span>
+                    </div>
+                </div>
+
+                <!-- Selector 3: MONOPLAZAS -->
+                <div class="glass-panel p-4 rounded-xl space-y-3">
+                    <label class="block font-orbitron text-xs font-bold text-red-400 uppercase tracking-wider">
+                        <i class="fa-solid fa-car-side mr-1"></i> 3. Monoplazas a Comparar
+                    </label>
+                    <div class="space-y-2">
+                        <div>
+                            <span class="text-[11px] text-gray-400 block mb-1">Coche Histórico / Época:</span>
+                            <select id="car-historic-select" onchange="updateComparisonPreview()" class="w-full bg-gray-900 border border-gray-700 text-white rounded-lg p-2 text-xs font-semibold focus:ring-1 focus:ring-f1-red">
+                                <!-- Populated via JS -->
+                            </select>
+                        </div>
+                        <div>
+                            <span class="text-[11px] text-gray-400 block mb-1">Coche Actual 2026/27:</span>
+                            <select id="car-modern-select" onchange="updateComparisonPreview()" class="w-full bg-gray-900 border border-gray-700 text-white rounded-lg p-2 text-xs font-semibold focus:ring-1 focus:ring-f1-red">
+                                <option value="mercedes2026">Mercedes W17 E Performance (2026)</option>
+                                <option value="mclaren2026">McLaren MCL39 (2026)</option>
+                                <option value="ferrari2026">Ferrari SF-26 (2026)</option>
+                                <option value="redbull2026">Red Bull Racing RB22 - Ford (2026)</option>
+                                <option value="rb2026">Racing Bulls VCARB 03 (2026)</option>
+                                <option value="alpine2026">Alpine A526 (2026)</option>
+                                <option value="williams2026">Williams FW48 (2026)</option>
+                                <option value="haas2026">Haas VF-26 (2026)</option>
+                                <option value="audi2026">Audi C45 Revolut (2026)</option>
+                                <option value="aston2026">Aston Martin AMR26 - Honda (2026)</option>
+                                <option value="cadillac2026">Cadillac MAC-01 (2026)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- START SIMULATION BUTTON -->
+            <div class="text-center">
+                <button onclick="runTelemetricSimulation()" id="btn-run-sim" class="bg-f1-red hover:bg-red-700 text-white font-orbitron font-black text-lg px-8 py-3.5 rounded-xl shadow-lg shadow-red-600/40 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center gap-3 mx-auto">
+                    <i class="fa-solid fa-bolt-lightning text-yellow-300"></i> INICIAR SIMULACIÓN TELEMÉTRICA
+                </button>
+            </div>
+
+            <!-- SIMULATION LOADING & ANIMATED F1 LOGO FILLING -->
+            <div id="sim-loading-area" class="hidden glass-panel p-8 rounded-xl text-center space-y-6">
+                <div class="max-w-md mx-auto space-y-4">
+                    <div class="text-center">
+                        <span class="font-orbitron font-bold text-sm tracking-widest text-f1-red uppercase animate-pulse block mb-1">
+                            PROCESANDO TELEMETRÍA DE PISTA...
+                        </span>
+                        <p class="text-xs text-gray-400">Comparando aerodinámica, frenada y velocidad de paso por curva</p>
+                    </div>
+
+                    <!-- SVG F1 LOGO THAT FILLS RED OVER 6 SECONDS -->
+                    <div class="w-48 mx-auto my-4">
+                        <svg id="f1-logo-svg" viewBox="0 0 200 60" class="w-full h-auto">
+                            <path class="f1-logo-mask" id="logo-bg" d="M 30,10 L 70,10 L 50,50 L 30,50 Z M 85,10 L 160,10 L 150,22 L 105,22 L 100,32 L 135,32 L 125,44 L 95,44 L 90,50 L 75,50 Z M 165,10 L 185,10 L 165,50 L 145,50 Z"/>
+                            <defs>
+                                <clipPath id="f1-fill-clip">
+                                    <rect id="fill-rect" x="0" y="0" width="0%" height="60" />
+                                </clipPath>
+                            </defs>
+                            <path class="f1-logo-filled" clip-path="url(#f1-fill-clip)" d="M 30,10 L 70,10 L 50,50 L 30,50 Z M 85,10 L 160,10 L 150,22 L 105,22 L 100,32 L 135,32 L 125,44 L 95,44 L 90,50 L 75,50 Z M 165,10 L 185,10 L 165,50 L 145,50 Z"/>
+                        </svg>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="w-full bg-gray-950 rounded-full h-3 p-0.5 border border-gray-800 overflow-hidden">
+                        <div id="sim-progress-bar" class="bg-gradient-to-r from-red-800 to-f1-red h-full rounded-full w-0 transition-all duration-200"></div>
+                    </div>
+                    <div class="flex justify-between text-[11px] font-mono text-gray-400">
+                        <span>CALCULANDO SECTORES</span>
+                        <span id="sim-timer-text">0.0s / 6.0s</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SIMULATION RESULTS DISPLAY -->
+            <div id="sim-results-area" class="space-y-6">
+                <!-- Summary Banner -->
+                <div class="glass-panel p-6 rounded-xl border border-gray-800 flex flex-col md:flex-row justify-between items-center gap-6">
+                    <div class="flex items-center gap-4">
+                        <div class="w-16 h-16 rounded-full bg-f1-red/20 border-2 border-f1-red flex items-center justify-center text-2xl text-f1-red font-bold font-orbitron">
+                            <i class="fa-solid fa-trophy"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs uppercase font-orbitron tracking-wider text-gray-400">Diferencia de Tiempo Estimada</span>
+                            <h3 id="res-time-diff" class="font-orbitron font-black text-2xl sm:text-3xl text-white">
+                                El coche 2026 es <span class="text-green-400">-4.280s</span> más rápido por vuelta
+                            </h3>
+                            <p id="res-lap-times" class="text-xs text-gray-300 mt-1 font-mono">
+                                Tiempo Histórico: 1:21.450 | Tiempo 2026: 1:17.170
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Horizontal Power Units Specs -->
+                <div class="space-y-3">
+                    <h3 class="font-orbitron font-bold text-sm text-gray-300 uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-engine text-f1-red"></i> ESPECIFICACIONES DE UNIDAD DE POTENCIA Y MOTOR (EN HORIZONTAL)
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Car Historic Engine -->
+                        <div class="glass-panel p-4 rounded-xl border-l-4 border-yellow-500 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span id="res-engine1-name" class="font-orbitron font-bold text-sm text-yellow-400">Ferrari F2004 (V10 Atmosférico)</span>
+                                <span class="text-[10px] bg-yellow-500/20 text-yellow-300 px-2 py-0.5 rounded font-semibold">HISTÓRICO</span>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2 text-center pt-2 text-xs">
+                                <div class="bg-gray-950 p-2 rounded border border-gray-800">
+                                    <span class="text-gray-500 text-[10px] block">POTENCIA ESTIMADA</span>
+                                    <strong id="res-engine1-hp" class="text-white font-mono">950 CV @ 19,000 RPM</strong>
+                                </div>
+                                <div class="bg-gray-950 p-2 rounded border border-gray-800">
+                                    <span class="text-gray-500 text-[10px] block">ARQUITECTURA</span>
+                                    <strong id="res-engine1-tech" class="text-white font-mono">3.0L V10 Aspirado</strong>
+                                </div>
+                                <div class="bg-gray-950 p-2 rounded border border-gray-800">
+                                    <span class="text-gray-500 text-[10px] block">PESO MONOPLAZA</span>
+                                    <strong id="res-engine1-weight" class="text-white font-mono">605 kg</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Car Modern Engine -->
+                        <div class="glass-panel p-4 rounded-xl border-l-4 border-cyan-400 space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span id="res-engine2-name" class="font-orbitron font-bold text-sm text-cyan-400">Mercedes W17 (Híbrido 2026/27)</span>
+                                <span class="text-[10px] bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded font-semibold">2026/27</span>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2 text-center pt-2 text-xs">
+                                <div class="bg-gray-950 p-2 rounded border border-gray-800">
+                                    <span class="text-gray-500 text-[10px] block">POTENCIA COMBINADA</span>
+                                    <strong id="res-engine2-hp" class="text-white font-mono">1,020 CV (350kW MGU-K)</strong>
+                                </div>
+                                <div class="bg-gray-950 p-2 rounded border border-gray-800">
+                                    <span class="text-gray-500 text-[10px] block">TECNOLOGÍA</span>
+                                    <strong id="res-engine2-tech" class="text-white font-mono">1.6L V6 Turbo e-Fuel</strong>
+                                </div>
+                                <div class="bg-gray-950 p-2 rounded border border-gray-800">
+                                    <span class="text-gray-500 text-[10px] block">AERODINÁMICA</span>
+                                    <strong id="res-engine2-weight" class="text-white font-mono">X-Mode / Z-Mode Activo</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sector 1, 2, 3 Comparison Table -->
+                <div class="glass-panel p-5 rounded-xl space-y-4">
+                    <div class="flex justify-between items-center border-b border-gray-800 pb-2">
+                        <h3 class="font-orbitron font-bold text-sm text-gray-200 flex items-center gap-2">
+                            <i class="fa-solid fa-chart-simple text-f1-red"></i> COMPARATORIA POR SECTORES DE PISTA (1, 2, 3)
+                        </h3>
+                        <span class="text-[11px] text-gray-400">Leyenda: 
+                            <span class="text-purple-400 font-bold">Morado</span> (Gran Victoria) | 
+                            <span class="text-green-400 font-bold">Verde</span> (Ventaja Leve) | 
+                            <span class="text-yellow-400 font-bold">Amarillo</span> (Desventaja Leve) | 
+                            <span class="text-red-400 font-bold">Rojo</span> (Gran Desventaja)
+                        </span>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm font-sans border-collapse">
+                            <thead>
+                                <tr class="bg-gray-950 text-gray-400 text-xs font-orbitron border-b border-gray-800">
+                                    <th class="p-3">SECTOR</th>
+                                    <th class="p-3">TIPO DE TRAZADO</th>
+                                    <th id="th-car-historic" class="p-3">TIEMPO HISTÓRICO</th>
+                                    <th id="th-car-modern" class="p-3">TIEMPO 2026/27</th>
+                                    <th class="p-3 text-center">DELTA / ESTADO</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sector-table-body" class="divide-y divide-gray-800">
+                                <!-- JS Populated -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Key Technical Winning Factors Summary -->
+                <div class="glass-panel p-5 rounded-xl space-y-3">
+                    <h3 class="font-orbitron font-bold text-sm text-gray-200 border-b border-gray-800 pb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-key text-yellow-400"></i> DETALLES CLAVES QUE DETERMINAN AL GANADOR EN ESTE TRAZADO
+                    </h3>
+                    <ul id="key-factors-list" class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-gray-300">
+                        <!-- JS Populated -->
+                    </ul>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- TAB 2: STANDINGS 2026 -->
+        <section id="content-standings" class="hidden space-y-6">
+            
+            <!-- Header -->
+            <div class="glass-panel p-4 rounded-xl border-l-4 border-yellow-500 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h2 class="font-orbitron text-xl font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-trophy text-yellow-500"></i>
+                        CLASIFICACIÓN DEL CAMPEONATO MUNDIAL F1 2026
+                    </h2>
+                    <p class="text-sm text-gray-400 mt-0.5">
+                        Actualizado oficialmente a fecha <strong class="text-white">06/10/2026</strong> (Parrilla Completa de 23 Pilotos y 11 Escuderías - 17 de 24 Grandes Premios Disputados).
+                    </p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="toggleStandingsSubTab('drivers')" id="btn-sub-drivers" class="px-4 py-2 rounded-lg bg-f1-red text-white font-bold text-xs font-orbitron">
+                        Mundial Pilotos (23)
+                    </button>
+                    <button onclick="toggleStandingsSubTab('constructors')" id="btn-sub-constructors" class="px-4 py-2 rounded-lg bg-gray-800 text-gray-300 font-bold text-xs font-orbitron hover:bg-gray-700">
+                        Mundial Constructores (11)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Drivers Grid Table -->
+            <div id="subtab-drivers" class="glass-panel rounded-xl overflow-hidden shadow-xl">
+                <div class="px-5 py-3 bg-gray-950 border-b border-gray-800 flex justify-between items-center text-xs text-gray-400 font-orbitron">
+                    <span><i class="fa-solid fa-user-ninja text-f1-red mr-1.5"></i> PARRILLA OFICIAL DE 23 PILOTOS 2026 (Haz clic en un piloto para ver su ficha)</span>
+                    <span>17 de 24 Carreras Completadas (17 Victorias & 17 Poles Totales)</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead>
+                            <tr class="bg-gray-900/90 text-gray-400 font-orbitron text-xs border-b border-gray-800">
+                                <th class="p-3 text-center w-12">POS</th>
+                                <th class="p-3">PILOTO</th>
+                                <th class="p-3">ESCUDERÍA 2026</th>
+                                <th class="p-3 text-center">VICTORIAS</th>
+                                <th class="p-3 text-center">POLES</th>
+                                <th class="p-3 text-right pr-6">PUNTOS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="drivers-standings-body" class="divide-y divide-gray-800/60">
+                            <!-- JS Populated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Constructors Grid Table -->
+            <div id="subtab-constructors" class="hidden glass-panel rounded-xl overflow-hidden shadow-xl">
+                <div class="px-5 py-3 bg-gray-950 border-b border-gray-800 flex justify-between items-center text-xs text-gray-400 font-orbitron">
+                    <span><i class="fa-solid fa-shield-halved text-cyan-400 mr-1.5"></i> CAMPEONATO MUNDIAL DE CONSTRUCTORES 2026</span>
+                    <span>11 Escuderías Oficiales</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead>
+                            <tr class="bg-gray-900/90 text-gray-400 font-orbitron text-xs border-b border-gray-800">
+                                <th class="p-3 text-center w-12">POS</th>
+                                <th class="p-3">ESCUDERÍA</th>
+                                <th class="p-3">MOTOR / UNIDAD DE POTENCIA</th>
+                                <th class="p-3 text-center">VICTORIAS</th>
+                                <th class="p-3 text-center">PODIOS</th>
+                                <th class="p-3 text-right pr-6">PUNTOS TOTALES</th>
+                            </tr>
+                        </thead>
+                        <tbody id="constructors-standings-body" class="divide-y divide-gray-800/60">
+                            <!-- JS Populated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- TAB 3: CALENDARIO 2026 -->
+        <section id="content-calendar" class="hidden space-y-6">
+            
+            <!-- Header -->
+            <div class="glass-panel p-4 rounded-xl border-l-4 border-cyan-400 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h2 class="font-orbitron text-xl font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-calendar-days text-cyan-400"></i>
+                        CALENDARIO OFICIAL FÓRMULA 1 TEMPORADA 2026
+                    </h2>
+                    <p class="text-sm text-gray-400 mt-0.5">
+                        24 Grandes Premios. En los Grandes Premios ya disputados (hasta el 06/10/2026) se incluye el podio (1º, 2º, 3º) y la vuelta rápida oficial.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Calendar Grid -->
+            <div id="calendar-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- JS Populated Cards -->
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- DRIVER STATS MODAL -->
+    <div id="driver-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="glass-panel max-w-md w-full p-6 rounded-2xl border border-gray-700 relative space-y-4">
+            <button onclick="closeDriverModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="flex items-center gap-4 border-b border-gray-800 pb-4">
+                <div id="modal-driver-color" class="w-12 h-12 rounded-xl flex items-center justify-center font-orbitron font-black text-xl text-white shadow-lg">
+                    #1
+                </div>
+                <div>
+                    <h3 id="modal-driver-name" class="font-orbitron font-bold text-lg text-white">Andrea Kimi Antonelli</h3>
+                    <p id="modal-driver-team" class="text-xs text-gray-400">Mercedes-AMG Petronas F1 Team</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3 text-center font-mono text-xs">
+                <div class="bg-gray-950 p-3 rounded-lg border border-gray-800">
+                    <span class="text-gray-500 block text-[10px]">PUNTOS 2026</span>
+                    <strong id="modal-driver-pts" class="text-lg text-yellow-400 font-orbitron">342</strong>
+                </div>
+                <div class="bg-gray-950 p-3 rounded-lg border border-gray-800">
+                    <span class="text-gray-500 block text-[10px]">VICTORIAS</span>
+                    <strong id="modal-driver-wins" class="text-lg text-white font-orbitron">8</strong>
+                </div>
+                <div class="bg-gray-950 p-3 rounded-lg border border-gray-800">
+                    <span class="text-gray-500 block text-[10px]">POLES</span>
+                    <strong id="modal-driver-poles" class="text-lg text-cyan-400 font-orbitron">6</strong>
+                </div>
+            </div>
+
+            <p id="modal-driver-bio" class="text-xs text-gray-300 leading-relaxed bg-gray-950/60 p-3 rounded-lg border border-gray-800/80">
+                Líder sólido del campeonato tras imponerse en múltiples Grandes Premios.
+            </p>
+        </div>
+    </div>
+
+    <!-- RACE DETAIL MODAL (PODIUM & FASTEST LAP OR PREDICTIONS) -->
+    <div id="race-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="glass-panel max-w-lg w-full p-6 rounded-2xl border border-gray-700 relative space-y-4 max-h-[90vh] overflow-y-auto">
+            <button onclick="closeRaceModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="border-b border-gray-800 pb-3">
+                <div class="flex justify-between items-center">
+                    <span id="modal-race-round" class="text-xs text-f1-red font-orbitron font-bold">ROUND 1</span>
+                    <span id="modal-race-status-badge" class="px-2.5 py-0.5 rounded text-[10px] font-bold font-orbitron"></span>
+                </div>
+                <h3 id="modal-race-title" class="font-orbitron font-bold text-xl text-white">GP DE AUSTRALIA</h3>
+                <p id="modal-race-date" class="text-xs text-gray-400">06 - 08 MARZO 2026 | Circuito Albert Park</p>
+            </div>
+
+            <!-- PAST RACES: PODIUM AND FASTEST LAP DISPLAY -->
+            <div id="modal-race-past-content" class="space-y-3">
+                <h4 class="font-orbitron text-xs font-bold text-yellow-400 uppercase flex items-center gap-1.5">
+                    <i class="fa-solid fa-trophy"></i> RESULTADO Y PODIO OFICIAL (CARRERA COMPLETADA)
+                </h4>
+                
+                <div class="grid grid-cols-1 gap-2 text-xs font-sans">
+                    <div class="bg-gray-950/90 p-3 rounded-xl border border-yellow-500/40 flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <span class="text-yellow-400 text-base font-black">🥇 1º</span>
+                            <span id="podium-1st" class="font-bold text-white text-sm">Andrea Kimi Antonelli</span>
+                        </div>
+                        <span id="podium-1st-team" class="text-[11px] text-gray-400 font-mono">Mercedes</span>
+                    </div>
+
+                    <div class="bg-gray-950/90 p-3 rounded-xl border border-gray-400/30 flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <span class="text-gray-300 text-base font-black">🥈 2º</span>
+                            <span id="podium-2nd" class="font-bold text-white text-sm">George Russell</span>
+                        </div>
+                        <span id="podium-2nd-team" class="text-[11px] text-gray-400 font-mono">Mercedes</span>
+                    </div>
+
+                    <div class="bg-gray-950/90 p-3 rounded-xl border border-amber-600/30 flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <span class="text-amber-600 text-base font-black">🥉 3º</span>
+                            <span id="podium-3rd" class="font-bold text-white text-sm">Lewis Hamilton</span>
+                        </div>
+                        <span id="podium-3rd-team" class="text-[11px] text-gray-400 font-mono">Ferrari</span>
+                    </div>
+                </div>
+
+                <!-- FASTEST LAP -->
+                <div class="bg-purple-950/40 p-3 rounded-xl border border-purple-500/40 flex justify-between items-center text-xs">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-stopwatch text-purple-400 text-base"></i>
+                        <div>
+                            <span class="text-purple-300 font-bold block">VUELTA RÁPIDA DE CARRERA</span>
+                            <span id="fastest-lap-driver" class="text-white font-semibold">George Russell (1:18.241)</span>
+                        </div>
+                    </div>
+                    <span class="bg-purple-500/20 text-purple-300 text-[10px] font-mono px-2 py-1 rounded font-bold uppercase">Oficial</span>
+                </div>
+            </div>
+
+            <!-- UPCOMING RACES: PREDICTIONS & SCHEDULES -->
+            <div id="modal-race-upcoming-content" class="space-y-4">
+                <!-- Schedules (Spanish Peninsular Time) -->
+                <div class="space-y-2">
+                    <h4 class="font-orbitron text-xs font-bold text-gray-300 uppercase"><i class="fa-solid fa-clock text-f1-red mr-1"></i> Horarios (Hora Peninsular de España)</h4>
+                    <div id="modal-race-schedules" class="grid grid-cols-2 gap-2 text-xs font-mono">
+                        <!-- JS Populated -->
+                    </div>
+                </div>
+
+                <!-- Predicted Dominant Team -->
+                <div class="bg-gray-950 p-4 rounded-xl border border-gray-800 space-y-2">
+                    <h4 class="font-orbitron text-xs font-bold text-yellow-400 uppercase"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Escudería Predominante Prevista</h4>
+                    <p id="modal-race-dominant-team" class="font-bold text-sm text-white">Mercedes-AMG Petronas F1 Team</p>
+                    <p id="modal-race-dominant-reason" class="text-xs text-gray-400 leading-relaxed">
+                        Las rectas largas combinadas con zonas de frenada fuerte favorecen la eficiencia del recuperador MGU-K de 350kW.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+
+        // DRIVERS DATA UPDATED TO 06/10/2026 (AFTER ROUND 18)
+        // TOTAL DRIVERS = 23 | TOTAL DISPUTED RACES = 18
+        const driversList = [
+            { pos: 1, name: "Andrea Kimi Antonelli", team: "Mercedes-AMG Petronas", wins: 8, poles: 6, points: 320, color: "#00d2be", bio: "Líder en solitario del campeonato acumulando 320 puntos con 8 victorias y constante presencia en el podio." },
+            { pos: 2, name: "George Russell", team: "Mercedes-AMG Petronas", wins: 3, poles: 5, points: 236, color: "#00d2be", bio: "Lucha feroz en Mercedes con 236 puntos y triunfos en China, Canadá y Bélgica." },
+            { pos: 3, name: "Lewis Hamilton", team: "Scuderia Ferrari", wins: 2, poles: 2, points: 214, color: "#e8002d", bio: "Firmando podios constantes y triunfos en Arabia Saudí y Silverstone vistiendo de rojo con 214 puntos." },
+            { pos: 4, name: "Charles Leclerc", team: "Scuderia Ferrari", wins: 1, poles: 1, points: 191, color: "#e8002d", bio: "Victoria soñada en Mónaco y múltiples podios alcanzando los 191 puntos para la Scuderia." },
+            { pos: 5, name: "Lando Norris", team: "McLaren F1 Team", wins: 2, poles: 2, points: 188, color: "#ff8000", bio: "Aprovechando la agilidad del MCL39 con victorias en Miami y Azerbaiyán sumando 188 puntos." },
+            { pos: 6, name: "Max Verstappen", team: "Red Bull Racing", wins: 2, poles: 2, points: 188, color: "#3671c6", bio: "Empatado a 188 puntos tras ganar en Austria y Singapur." },
+            { pos: 7, name: "Oscar Piastri", team: "McLaren F1 Team", wins: 0, poles: 0, points: 128, color: "#ff8000", bio: "Pilar fundamental para McLaren sumando 128 puntos para el campeonato." },
+            { pos: 8, name: "Isack Hadjar", team: "Red Bull Racing", wins: 0, poles: 0, points: 96, color: "#3671c6", bio: "Aportando valiosas actuaciones sumando 96 puntos con Red Bull." },
+            { pos: 9, name: "Liam Lawson", team: "Racing Bulls (RB)", wins: 0, poles: 0, points: 65, color: "#6692ff", bio: "Comandando la escudería filial con sólidas actuaciones alcanzando los 65 puntos." },
+            { pos: 10, name: "Pierre Gasly", team: "Alpine F1 Team", wins: 0, poles: 1, points: 41, color: "#0093cc", bio: "Pole position inolvidable bajo la lluvia y suma constante de 41 puntos." },
+            { pos: 11, name: "Arvid Lindblad", team: "Racing Bulls (RB)", wins: 0, poles: 0, points: 38, color: "#6692ff", bio: "Prometedor ritmo de carrera sumando 38 puntos en su campaña en la categoría reina." },
+            { pos: 12, name: "Franco Colapinto", team: "Alpine F1 Team", wins: 0, poles: 0, points: 27, color: "#0093cc", bio: "Brillante rendimiento y adelantamientos decisivos acumulando 27 puntos." },
+            { pos: 13, name: "Oliver Bearman", team: "Haas F1 Team", wins: 0, poles: 0, points: 20, color: "#b6babd", bio: "Demostrando solvencia y velocidad pura liderando en Haas con 20 puntos." },
+            { pos: 14, name: "Gabriel Bortoleto", team: "Audi Revolut F1 Team", wins: 0, poles: 0, points: 10, color: "#f50500", bio: "Liderando el casillero de Audi con 10 valiosos puntos históricos." },
+            { pos: 15, name: "Nico Hülkenberg", team: "Audi Revolut F1 Team", wins: 0, poles: 0, points: 7, color: "#f50500", bio: "Experiencia clave aportando 7 puntos en el desarrollo continuo de Audi." },
+            { pos: 16, name: "Esteban Ocon", team: "Haas F1 Team", wins: 0, poles: 0, points: 7, color: "#b6babd", bio: "Defensa feroz en pista para rascar 7 puntos en la zona media con Haas." },
+            { pos: 17, name: "Fernando Alonso", team: "Aston Martin Aramco", wins: 0, poles: 0, points: 7, color: "#229971", bio: "Trabajo incansable exprimiendo la unidad motriz Honda alcanzando 7 puntos." },
+            { pos: 18, name: "Carlos Sainz Jr.", team: "Williams Racing", wins: 0, poles: 0, points: 7, color: "#64c4ff", bio: "Encabezando la evolución técnica de Williams sumando 7 puntos clave." },
+            { pos: 19, name: "Alexander Albon", team: "Williams Racing", wins: 0, poles: 0, points: 5, color: "#64c4ff", bio: "Sumando 5 puntos regulares para la escudería de Grove." },
+            { pos: 20, name: "Yuki Tsunoda", team: "Racing Bulls (RB)", wins: 0, poles: 0, points: 1, color: "#6692ff", bio: "Piloto de desarrollo sumando 1 valioso punto en la tabla mundial." },
+            { pos: 21, name: "Lance Stroll", team: "Aston Martin Aramco", wins: 0, poles: 0, points: 0, color: "#229971", bio: "Buscando sus primeros puntos adaptándose al monoplaza Aston Martin." },
+            { pos: 22, name: "Valtteri Bottas", team: "Cadillac F1 Team", wins: 0, poles: 0, points: 0, color: "#ffc72c", bio: "Aportando valiosa experiencia para la puesta a punto del monoplaza Cadillac." },
+            { pos: 23, name: "Sergio Pérez", team: "Cadillac F1 Team", wins: 0, poles: 0, points: 0, color: "#ffc72c", bio: "Liderando la formación de desarrollo del nuevo equipo americano Cadillac F1." }
+        ];
+
+        // CONSTRUCTORS DATA UPDATED TO 06/10/2026 (17 RACES)
+        const constructorsList = [
+            { pos: 1, team: "Mercedes-AMG Petronas", engine: "Mercedes 1.6 V6 Turbo 2026", wins: 11, podiums: 23, points: 620, color: "#00d2be" },
+            { pos: 2, team: "Scuderia Ferrari", engine: "Ferrari 067/1 Híbrido", wins: 3, podiums: 13, points: 403, color: "#e8002d" },
+            { pos: 3, team: "McLaren F1 Team", engine: "Mercedes 1.6 V6 Turbo 2026", wins: 2, podiums: 9, points: 337, color: "#ff8000" },
+            { pos: 4, team: "Red Bull Racing", engine: "Red Bull Ford Powertrains", wins: 2, podiums: 9, points: 287, color: "#3671c6" },
+            { pos: 5, team: "Racing Bulls (RB)", engine: "Red Bull Ford Powertrains", wins: 0, podiums: 0, points: 103, color: "#6692ff" },
+            { pos: 6, team: "Alpine F1 Team", engine: "Mercedes Power Engine", wins: 0, podiums: 0, points: 73, color: "#0093cc" },
+            { pos: 7, team: "Williams Racing", engine: "Mercedes 1.6 V6 Turbo 2026", wins: 0, podiums: 0, points: 35, color: "#64c4ff" },
+            { pos: 8, team: "Haas F1 Team", engine: "Ferrari 067/1 Híbrido", wins: 0, podiums: 0, points: 21, color: "#b6babd" },
+            { pos: 9, team: "Audi Revolut F1 Team", engine: "Audi Power Unit 2026", wins: 0, podiums: 0, points: 20, color: "#f50500" },
+            { pos: 10, team: "Aston Martin Aramco", engine: "Honda RBPT 2026", wins: 0, podiums: 0, points: 11, color: "#229971" },
+            { pos: 11, team: "Cadillac F1 Team", engine: "Ferrari Customer Power Unit", wins: 0, podiums: 0, points: 2, color: "#ffc72c" }
+        ];
+
+        const modernCars2026 = {
+            mercedes2026: { id: "mercedes2026", name: "Mercedes W17 E Performance", hp: "1,020 CV (350kW MGU-K)", tech: "1.6L V6 Turbo e-Fuel", weight: "768 kg", baseLap: 77.17 },
+            mclaren2026: { id: "mclaren2026", name: "McLaren MCL39", hp: "1,015 CV (350kW MGU-K)", tech: "1.6L V6 Turbo e-Fuel", weight: "768 kg", baseLap: 77.45 },
+            ferrari2026: { id: "ferrari2026", name: "Ferrari SF-26", hp: "1,025 CV (350kW MGU-K)", tech: "Ferrari 067/1 Híbrido", weight: "768 kg", baseLap: 77.25 },
+            redbull2026: { id: "redbull2026", name: "Red Bull Racing RB22 - Ford", hp: "1,010 CV (350kW MGU-K)", tech: "Red Bull Ford Powertrains", weight: "768 kg", baseLap: 77.50 },
+            rb2026: { id: "rb2026", name: "Racing Bulls VCARB 03", hp: "1,000 CV (350kW MGU-K)", tech: "Red Bull Ford Powertrains", weight: "768 kg", baseLap: 78.10 },
+            alpine2026: { id: "alpine2026", name: "Alpine A526", hp: "1,005 CV (350kW MGU-K)", tech: "Mercedes Power Engine", weight: "768 kg", baseLap: 78.30 },
+            williams2026: { id: "williams2026", name: "Williams FW48", hp: "1,010 CV (350kW MGU-K)", tech: "1.6L V6 Turbo e-Fuel", weight: "768 kg", baseLap: 78.50 },
+            haas2026: { id: "haas2026", name: "Haas VF-26", hp: "1,000 CV (350kW MGU-K)", tech: "Ferrari 067/1 Híbrido", weight: "768 kg", baseLap: 78.60 },
+            audi2026: { id: "audi2026", name: "Audi C45 Revolut", hp: "1,000 CV (350kW MGU-K)", tech: "Audi Power Unit 2026", weight: "768 kg", baseLap: 78.65 },
+            aston2026: { id: "aston2026", name: "Aston Martin AMR26 - Honda", hp: "1,005 CV (350kW MGU-K)", tech: "Honda RBPT 2026", weight: "768 kg", baseLap: 78.70 },
+            cadillac2026: { id: "cadillac2026", name: "Cadillac MAC-01", hp: "995 CV (350kW MGU-K)", tech: "Ferrari Customer PU", weight: "768 kg", baseLap: 78.95 }
+        };
+
+        const historicErasData = {
+            inicios: {
+                description: "Primera época con motores frontales de 1.5L/4.5L atmosféricos, neumáticos estrechos y sin aerodinámica.",
+                circuits: [
+                    { id: "monza_50", name: "Monza (1950 - Peraltada / Alta Velocidad)", length: "6.300 km" },
+                    { id: "silverstone_50", name: "Silverstone (1950 - Trazado Clásico)", length: "4.649 km" },
+                    { id: "spa_50", name: "Spa-Francorchamps (1950 - Trazado Antiguo)", length: "14.120 km" },
+                    { id: "nurburgring_50", name: "Nürburgring Nordschleife (Infierno Verde)", length: "22.835 km" },
+                    { id: "monaco_50", name: "Monaco (1950 - Las Calles del Principado)", length: "3.145 km" },
+                    { id: "reims_50", name: "Reims-Gueux (1950 - GP de Francia)", length: "7.816 km" }
+                ],
+                cars: [
+                    { id: "alfetta", name: "Alfa Romeo 158 'Alfetta' (1950)", hp: "350 CV", tech: "1.5L Inline-8 Compressor", weight: "700 kg", baseLap: 118.5 },
+                    { id: "ferrari375", name: "Ferrari 375 F1 (1951)", hp: "380 CV", tech: "4.5L V12 Aspirado", weight: "720 kg", baseLap: 116.8 },
+                    { id: "mcedes_w196", name: "Mercedes-Benz W196 (1954)", hp: "290 CV", tech: "2.5L Inline-8 Inyección", weight: "650 kg", baseLap: 112.0 },
+                    { id: "maserati_250f", name: "Maserati 250F (1957)", hp: "270 CV", tech: "2.5L L6 Aspirado", weight: "630 kg", baseLap: 114.2 }
+                ]
+            },
+            "2000s": {
+                description: "Motores V10 atmosféricos rugiendo a 19,000 RPM, sin restricciones híbridas y peso ultraligero.",
+                circuits: [
+                    { id: "monza", name: "Autodromo Nazionale Monza", length: "5.793 km" },
+                    { id: "spa", name: "Circuit de Spa-Francorchamps", length: "7.004 km" },
+                    { id: "silverstone", name: "Silverstone Circuit", length: "5.141 km" },
+                    { id: "interlagos", name: "Autódromo José Carlos Pace (Interlagos)", length: "4.309 km" },
+                    { id: "suzuka", name: "Suzuka International Racing Course", length: "5.807 km" },
+                    { id: "sepang", name: "Sepang International Circuit", length: "5.543 km" },
+                    { id: "hockenheim", name: "Hockenheimring Baden-Württemberg", length: "4.574 km" },
+                    { id: "magny_cours", name: "Circuit de Nevers Magny-Cours", length: "4.411 km" }
+                ],
+                cars: [
+                    { id: "f2004", name: "Ferrari F2004 (V10 Atmosférico)", hp: "950 CV @ 19,000 RPM", tech: "3.0L V10 Aspirado", weight: "605 kg", baseLap: 81.45 },
+                    { id: "mclaren_mp419", name: "McLaren MP4-19B (2004 V10)", hp: "930 CV", tech: "3.0L V10 Aspirado", weight: "605 kg", baseLap: 82.10 },
+                    { id: "renault_r25", name: "Renault R25 (2005 V10)", hp: "910 CV", tech: "3.0L V10 Aspirado", weight: "605 kg", baseLap: 82.50 },
+                    { id: "williams_fw26", name: "Williams FW26 (2004 V10)", hp: "940 CV", tech: "BMW 3.0L V10", weight: "605 kg", baseLap: 81.90 },
+                    { id: "bmw_f108", name: "BMW Sauber F1.08 (2008 V8)", hp: "780 CV", tech: "2.4L V8 Aspirado", weight: "605 kg", baseLap: 83.20 }
+                ]
+            },
+            moderna: {
+                description: "Monoplazas de la era híbrida 2026/27 con aerodinámica activa (X-Mode/Z-Mode) y e-Fuels 100% sostenibles.",
+                circuits: [
+                    { id: "monza", name: "Autodromo Nazionale Monza", length: "5.793 km" },
+                    { id: "spa", name: "Circuit de Spa-Francorchamps", length: "7.004 km" },
+                    { id: "barcelona", name: "Circuit de Barcelona-Catalunya", length: "4.657 km" },
+                    { id: "silverstone", name: "Silverstone Circuit", length: "5.891 km" },
+                    { id: "suzuka", name: "Suzuka Circuit", length: "5.807 km" },
+                    { id: "bahrain", name: "Bahrain International Circuit", length: "5.412 km" },
+                    { id: "monaco", name: "Circuit de Monaco", length: "3.337 km" }
+                ],
+                cars: [
+                    { id: "mercedes2026", name: "Mercedes W17 E Performance (2026)", hp: "1,020 CV (350kW MGU-K)", tech: "1.6L V6 Turbo e-Fuel", weight: "768 kg", baseLap: 77.17 },
+                    { id: "mclaren2026", name: "McLaren MCL39 (2026)", hp: "1,015 CV (350kW MGU-K)", tech: "1.6L V6 Turbo e-Fuel", weight: "768 kg", baseLap: 77.45 },
+                    { id: "ferrari2026", name: "Ferrari SF-26 (2026)", hp: "1,025 CV (350kW MGU-K)", tech: "Ferrari 067/1 Híbrido", weight: "768 kg", baseLap: 77.25 },
+                    { id: "redbull2026", name: "Red Bull Racing RB22 - Ford (2026)", hp: "1,010 CV (350kW MGU-K)", tech: "Red Bull Ford Powertrains", weight: "768 kg", baseLap: 77.50 },
+                    { id: "rb2026", name: "Racing Bulls VCARB 03 (2026)", hp: "1,000 CV (350kW MGU-K)", tech: "Red Bull Ford Powertrains", weight: "768 kg", baseLap: 78.10 },
+                    { id: "alpine2026", name: "Alpine A526 (2026)", hp: "1,005 CV (350kW MGU-K)", tech: "Mercedes Power Engine", weight: "768 kg", baseLap: 78.30 },
+                    { id: "williams2026", name: "Williams FW48 (2026)", hp: "1,010 CV (350kW MGU-K)", tech: "1.6L V6 Turbo e-Fuel", weight: "768 kg", baseLap: 78.50 },
+                    { id: "haas2026", name: "Haas VF-26 (2026)", hp: "1,000 CV (350kW MGU-K)", tech: "Ferrari 067/1 Híbrido", weight: "768 kg", baseLap: 78.60 },
+                    { id: "audi2026", name: "Audi C45 Revolut (2026)", hp: "1,000 CV (350kW MGU-K)", tech: "Audi Power Unit 2026", weight: "768 kg", baseLap: 78.65 },
+                    { id: "aston2026", name: "Aston Martin AMR26 - Honda (2026)", hp: "1,005 CV (350kW MGU-K)", tech: "Honda RBPT 2026", weight: "768 kg", baseLap: 78.70 },
+                    { id: "cadillac2026", name: "Cadillac MAC-01 (2026)", hp: "995 CV (350kW MGU-K)", tech: "Ferrari Customer PU", weight: "768 kg", baseLap: 78.95 }
+                ]
+            }
+        };
+
+        const calendarRounds = [
+            { round: 1, name: "GP de Australia", location: "Melbourne", dates: "06-08 MAR", flag: "🇦🇺", completed: true, podium: ["George Russell", "Andrea Kimi Antonelli", "Charles Leclerc"], teams: ["Mercedes", "Mercedes", "Ferrari"], fastestLap: "Max Verstappen (1:22.091)" },
+            { round: 2, name: "GP de China", location: "Shanghai", dates: "20-22 MAR", flag: "🇨🇳", completed: true, podium: ["Andrea Kimi Antonelli", "George Russell", "Lewis Hamilton"], teams: ["Mercedes", "Mercedes", "Ferrari"], fastestLap: "Andrea Kimi Antonelli (1:35.275)" },
+            { round: 3, name: "GP de Japón", location: "Suzuka", dates: "03-05 ABR", flag: "🇯🇵", completed: true, podium: ["Andrea Kimi Antonelli", "Oscar Piastri", "Charles Leclerc"], teams: ["Mercedes", "McLaren", "Ferrari"], fastestLap: "Andrea Kimi Antonelli (1:32.432)" },
+            { round: 4, name: "GP de Miami", location: "Miami", dates: "01-03 MAY", flag: "🇺🇸", completed: true, podium: ["Andrea Kimi Antonelli", "Lando Norris", "Oscar Piastri"], teams: ["Mercedes", "McLaren", "McLaren"], fastestLap: "Lando Norris (1:31.869)" },
+            { round: 5, name: "GP de Canadá", location: "Montreal", dates: "15-17 MAY", flag: "🇨🇦", completed: true, podium: ["Andrea Kimi Antonelli", "Lewis Hamilton", "Max Verstappen"], teams: ["Mercedes", "Ferrari", "Red Bull"], fastestLap: "Andrea Kimi Antonelli (1:14.210)" },
+            { round: 6, name: "GP de Mónaco", location: "Monte Carlo", dates: "29-31 MAY", flag: "🇲🇨", completed: true, podium: ["Andrea Kimi Antonelli", "Lewis Hamilton", "Isack Hadjar"], teams: ["Mercedes", "Ferrari", "Red Bull"], fastestLap: "Andrea Kimi Antonelli (1:13.481)" },
+            { round: 7, name: "GP de Barcelona-Catalunya", location: "Barcelona", dates: "05-07 JUN", flag: "🇪🇸", completed: true, podium: ["Lewis Hamilton", "George Russell", "Lando Norris"], teams: ["Ferrari", "Mercedes", "McLaren"], fastestLap: "Lewis Hamilton (1:20.122)" },
+            { round: 8, name: "GP de Austria", location: "Spielberg", dates: "19-21 JUN", flag: "🇦🇹", completed: true, podium: ["George Russell", "Max Verstappen", "Andrea Kimi Antonelli"], teams: ["Mercedes", "Red Bull", "Mercedes"], fastestLap: "Andrea Kimi Antonelli (1:10.374)" },
+            { round: 9, name: "GP de Gran Bretaña", location: "Silverstone", dates: "03-05 JUL", flag: "🇬🇧", completed: true, podium: ["Charles Leclerc", "George Russell", "Lewis Hamilton"], teams: ["Ferrari", "Mercedes", "Ferrari"], fastestLap: "Andrea Kimi Antonelli (1:31.777)" },
+            { round: 10, name: "GP de Bélgica", location: "Spa-Francorchamps", dates: "17-19 JUL", flag: "🇧🇪", completed: true, podium: ["Andrea Kimi Antonelli", "Charles Leclerc", "Max Verstappen"], teams: ["Mercedes", "Ferrari", "Red Bull"], fastestLap: "Lando Norris (1:48.890)" },
+            { round: 11, name: "GP de Hungría", location: "Hungaroring", dates: "31 JUL-02 AGO", flag: "🇭🇺", completed: true, podium: ["Lando Norris", "Max Verstappen", "Andrea Kimi Antonelli"], teams: ["McLaren", "Red Bull", "Mercedes"], fastestLap: "Charles Leclerc (1:22.000)" },
+            { round: 12, name: "GP de Países Bajos", location: "Zandvoort", dates: "28-30 AGO", flag: "🇳🇱", completed: true, podium: ["Lando Norris", "Andrea Kimi Antonelli", "George Russell"], teams: ["McLaren", "Mercedes", "Mercedes"], fastestLap: "Charles Leclerc (1:14.230)" },
+            { round: 13, name: "GP de Italia", location: "Monza", dates: "04-06 SEP", flag: "🇮🇹", completed: true, podium: ["Andrea Kimi Antonelli", "George Russell", "Max Verstappen"], teams: ["Mercedes", "Mercedes", "Red Bull"], fastestLap: "Andrea Kimi Antonelli (1:23.504)" },
+            { round: 14, name: "GP de España", location: "Madrid", dates: "11-13 SEP", flag: "🇪🇸", completed: true, podium: ["Andrea Kimi Antonelli", "Max Verstappen", "Lando Norris"], teams: ["Mercedes", "Red Bull", "McLaren"], fastestLap: "George Russell (1:35.587)" },
+            { round: 15, name: "GP de Azerbaiyán", location: "Baku", dates: "25-27 SEP", flag: "🇦🇿", completed: true, podium: ["George Russell", "Max Verstappen", "Isack Hadjar"], teams: ["Mercedes", "Red Bull", "Red Bull"], fastestLap: "George Russell (1:44.916)" },
+            { round: 16, name: "GP de Bahréin", location: "Sakhir", dates: "02-04 OCT", flag: "🇧🇭", completed: true, podium: ["Max Verstappen", "Andrea Kimi Antonelli", "Lewis Hamilton"], teams: ["Red Bull", "Mercedes", "Ferrari"], fastestLap: "Max Verstappen (1:38.220)" },
+            { round: 17, name: "GP de Singapur", location: "Marina Bay", dates: "09-11 OCT", flag: "🇸🇬", completed: false, dominant: "Red Bull Racing / Mercedes", reason: "Trazado urbano nocturno con alta exigencia en carga aerodinámica, tracción a baja velocidad y gestión de temperatura de frenos." },
+            { round: 18, name: "GP de Estados Unidos", location: "Austin (COTA)", dates: "23-25 OCT", flag: "🇺🇸", completed: false, dominant: "Mercedes-AMG Petronas", reason: "Excelente compromiso entre zonas del primer sector de curvas rápidas y rectas de tracción." },
+            { round: 19, name: "GP de Ciudad de México", location: "Hermanos Rodríguez", dates: "30 OCT-01 NOV", flag: "🇲🇽", completed: false, dominant: "Scuderia Ferrari", reason: "La menor densidad de aire a altitud beneficia la eficiencia del turbocompresor Ferrari." },
+            { round: 20, name: "GP de Brasil", location: "Interlagos", dates: "13-15 NOV", flag: "🇧🇷", completed: false, dominant: "McLaren F1 Team", reason: "Aero ágil y gran capacidad de tracción saliendo del sector revirado de las 'S de Senna'." },
+            { round: 21, name: "GP de Las Vegas", location: "Las Vegas Strip", dates: "26-28 NOV", flag: "🇺🇸", completed: false, dominant: "Mercedes-AMG Petronas", reason: "Velocidad punta determinante en la gran recta con el sistema activo X-Mode activado." },
+            { round: 22, name: "GP de Catar", location: "Lusail", dates: "04-06 DIC", flag: "🇶🇦", completed: false, dominant: "Mercedes-AMG Petronas", reason: "Secuencia ininterrumpida de curvas a alta velocidad que premia la estabilidad del W17." },
+            { round: 23, name: "GP de Abu Dabi", location: "Yas Marina", dates: "11-13 DIC", flag: "🇦🇪", completed: false, dominant: "Scuderia Ferrari", reason: "Sector final revirado idóneo para la tracción híbrida e-fuel de la Scuderia." }
+        ];
+
+        function onEraChange() {
+            const eraKey = document.getElementById('era-select').value;
+            const eraData = historicErasData[eraKey] || historicErasData['2000s'];
+
+            document.getElementById('era-desc').innerText = eraData.description;
+
+            const circuitSelect = document.getElementById('circuit-select');
+            circuitSelect.innerHTML = eraData.circuits.map(c => `<option value="${c.id}" data-len="${c.length}">${c.name}</option>`).join('');
+
+            const carHistSelect = document.getElementById('car-historic-select');
+            carHistSelect.innerHTML = eraData.cars.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+
+            onCircuitChange();
+        }
+
+        function onCircuitChange() {
+            const circuitSelect = document.getElementById('circuit-select');
+            const selectedOption = circuitSelect.options[circuitSelect.selectedIndex];
+            const length = selectedOption ? selectedOption.getAttribute('data-len') : '5.793 km';
+
+            document.getElementById('circuit-length').innerText = length;
+            updateComparisonPreview();
+        }
+
+        function getSelectedCars() {
+            const eraKey = document.getElementById('era-select').value;
+            const historicCarId = document.getElementById('car-historic-select').value;
+            const modernCarId = document.getElementById('car-modern-select').value;
+
+            const eraCars = historicErasData[eraKey] ? historicErasData[eraKey].cars : historicErasData['2000s'].cars;
+            const carHistoric = eraCars.find(c => c.id === historicCarId) || eraCars[0];
+            const carModern = modernCars2026[modernCarId] || modernCars2026['mercedes2026'];
+
+            return { carHistoric, carModern };
+        }
+
+        function updateComparisonPreview() {
+            const { carHistoric, carModern } = getSelectedCars();
+
+            document.getElementById('res-engine1-name').innerText = carHistoric.name;
+            document.getElementById('res-engine1-hp').innerText = carHistoric.hp;
+            document.getElementById('res-engine1-tech').innerText = carHistoric.tech;
+            document.getElementById('res-engine1-weight').innerText = carHistoric.weight;
+
+            document.getElementById('res-engine2-name').innerText = carModern.name;
+            document.getElementById('res-engine2-hp').innerText = carModern.hp;
+            document.getElementById('res-engine2-tech').innerText = carModern.tech;
+            document.getElementById('res-engine2-weight').innerText = carModern.weight;
+
+            const thHist = document.getElementById('th-car-historic');
+            if (thHist) thHist.innerText = `TIEMPO (${carHistoric.name.split(' ')[0]})`;
+            const thMod = document.getElementById('th-car-modern');
+            if (thMod) thMod.innerText = `TIEMPO (${carModern.name.split(' ')[0]})`;
+        }
+
+        let simInterval = null;
+        function runTelemetricSimulation() {
+            const loadingArea = document.getElementById('sim-loading-area');
+            const resultsArea = document.getElementById('sim-results-area');
+            const progressBar = document.getElementById('sim-progress-bar');
+            const fillRect = document.getElementById('fill-rect');
+            const timerText = document.getElementById('sim-timer-text');
+            const btnSim = document.getElementById('btn-run-sim');
+
+            btnSim.disabled = true;
+            btnSim.classList.add('opacity-50', 'cursor-not-allowed');
+            loadingArea.classList.remove('hidden');
+            resultsArea.classList.add('hidden');
+
+            let currentProgress = 0;
+            const duration = 6000; // 6 seconds
+            const intervalTime = 100;
+            const increment = (intervalTime / duration) * 100;
+
+            if (simInterval) clearInterval(simInterval);
+
+            simInterval = setInterval(() => {
+                currentProgress += increment;
+                if (currentProgress > 100) currentProgress = 100;
+
+                progressBar.style.width = `${currentProgress}%`;
+                if (fillRect) fillRect.setAttribute('width', `${currentProgress}%`);
+
+                const secondsElapsed = ((currentProgress / 100) * 6).toFixed(1);
+                timerText.innerText = `${secondsElapsed}s / 6.0s`;
+
+                if (currentProgress >= 100) {
+                    clearInterval(simInterval);
+                    setTimeout(() => {
+                        loadingArea.classList.add('hidden');
+                        resultsArea.classList.remove('hidden');
+                        btnSim.disabled = false;
+                        btnSim.classList.remove('opacity-50', 'cursor-not-allowed');
+                        calculateAndRenderResults();
+                    }, 300);
+                }
+            }, intervalTime);
+        }
+
+        function calculateAndRenderResults() {
+            const { carHistoric, carModern } = getSelectedCars();
+
+            // Lap time math calculation
+            const historicTime = carHistoric.baseLap;
+            const modernTime = carModern.baseLap;
+            const diffVal = historicTime - modernTime;
+            const diff = Math.abs(diffVal).toFixed(3);
+            const isSameCar = (carHistoric.id === carModern.id) || (Math.abs(diffVal) < 0.0001);
+
+            const timeDiffContainer = document.getElementById('res-time-diff');
+            if (isSameCar) {
+                timeDiffContainer.innerHTML = `Ambos monoplazas son idénticos: <span class="text-cyan-400">0.000s</span> de diferencia (Mismo rendimiento)`;
+            } else if (diffVal > 0) {
+                timeDiffContainer.innerHTML = `El coche 2026 es <span class="text-green-400">-${diff}s</span> más rápido por vuelta`;
+            } else {
+                timeDiffContainer.innerHTML = `El coche 2026 es <span class="text-red-400">+${diff}s</span> más lento por vuelta`;
+            }
+
+            document.getElementById('res-lap-times').innerText = 
+                `Tiempo ${carHistoric.name}: ${formatTime(historicTime)} | Tiempo ${carModern.name}: ${formatTime(modernTime)}`;
+
+            // Populate Sector 1, 2, 3 Table
+            const s1Hist = (historicTime * 0.31).toFixed(3);
+            const s1Mod = (isSameCar ? historicTime * 0.31 : modernTime * 0.29).toFixed(3);
+            const s1DeltaVal = isSameCar ? 0 : parseFloat((s1Hist - s1Mod).toFixed(3));
+
+            const s2Hist = (historicTime * 0.42).toFixed(3);
+            const s2Mod = (isSameCar ? historicTime * 0.42 : modernTime * 0.41).toFixed(3);
+            const s2DeltaVal = isSameCar ? 0 : parseFloat((s2Hist - s2Mod).toFixed(3));
+
+            const s3Hist = (historicTime * 0.27).toFixed(3);
+            const s3Mod = (isSameCar ? historicTime * 0.27 : modernTime * 0.30).toFixed(3);
+            const s3DeltaVal = isSameCar ? 0 : parseFloat((s3Hist - s3Mod).toFixed(3));
+
+            const sectors = [
+                { name: "Sector 1", type: "Recta Principal y Aceleración", tHist: s1Hist, tMod: s1Mod, delta: s1DeltaVal },
+                { name: "Sector 2", type: "Zona Virada y Curvas Rápidas", tHist: s2Hist, tMod: s2Mod, delta: s2DeltaVal },
+                { name: "Sector 3", type: "Chicanes y Tracción de Salida", tHist: s3Hist, tMod: s3Mod, delta: s3DeltaVal }
+            ];
+
+            const sectorTableBody = document.getElementById('sector-table-body');
+            sectorTableBody.innerHTML = sectors.map(s => {
+                let badgeClass = "sector-green";
+                let badgeLabel = "Ventaja Leve";
+                let deltaText = "";
+
+                if (Math.abs(s.delta) < 0.0001) {
+                    badgeClass = "bg-cyan-500/20 border-cyan-500 text-cyan-300";
+                    badgeLabel = "Rendimiento Idéntico";
+                    deltaText = "0.000s";
+                } else if (s.delta > 2.0) {
+                    badgeClass = "sector-purple";
+                    badgeLabel = "Gran Victoria 2026";
+                    deltaText = `-${Math.abs(s.delta).toFixed(3)}s`;
+                } else if (s.delta > 0) {
+                    badgeClass = "sector-green";
+                    badgeLabel = "Ventaja 2026";
+                    deltaText = `-${Math.abs(s.delta).toFixed(3)}s`;
+                } else if (s.delta > -1.0) {
+                    badgeClass = "sector-yellow";
+                    badgeLabel = "Desventaja Leve";
+                    deltaText = `+${Math.abs(s.delta).toFixed(3)}s`;
+                } else {
+                    badgeClass = "sector-red";
+                    badgeLabel = "Gran Desventaja";
+                    deltaText = `+${Math.abs(s.delta).toFixed(3)}s`;
+                }
+
+                return `
+                    <tr class="hover:bg-gray-900/50 transition">
+                        <td class="p-3 font-orbitron font-bold text-white">${s.name}</td>
+                        <td class="p-3 text-gray-400 text-xs">${s.type}</td>
+                        <td class="p-3 font-mono text-gray-300">${s.tHist}s</td>
+                        <td class="p-3 font-mono text-cyan-400 font-bold">${s.tMod}s</td>
+                        <td class="p-3 text-center">
+                            <span class="inline-block px-3 py-1 rounded-md text-xs font-bold border ${badgeClass}">
+                                ${deltaText} (${badgeLabel})
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Key Factors Summary correlated with performance & standings
+            const keyFactorsList = document.getElementById('key-factors-list');
+            if (isSameCar) {
+                keyFactorsList.innerHTML = `
+                    <li class="bg-gray-950 p-3 rounded-lg border border-gray-800 flex items-start gap-2 col-span-2">
+                        <i class="fa-solid fa-check text-cyan-400 mt-0.5"></i>
+                        <div>
+                            <strong class="text-white block">Comparativa de Modelos Idénticos (0.000s Delta):</strong>
+                            <span>Al seleccionar el mismo monoplaza para ambas opciones, los parámetros telemétricos, mapas de motor y configuración aerodinámica se igualan exactamente, dando una diferencia nula.</span>
+                        </div>
+                    </li>
+                `;
+            } else {
+                keyFactorsList.innerHTML = `
+                    <li class="bg-gray-950 p-3 rounded-lg border border-gray-800 flex items-start gap-2">
+                        <i class="fa-solid fa-check text-green-400 mt-0.5"></i>
+                        <div>
+                            <strong class="text-white block">Eficiencia Aerodinámica (X-Mode & Z-Mode):</strong>
+                            <span>Los monoplazas de 2026 (liderados por Mercedes y Ferrari) reducen la resistencia en recta hasta un 40% respecto a épocas anteriores.</span>
+                        </div>
+                    </li>
+                    <li class="bg-gray-950 p-3 rounded-lg border border-gray-800 flex items-start gap-2">
+                        <i class="fa-solid fa-check text-green-400 mt-0.5"></i>
+                        <div>
+                            <strong class="text-white block">Aportación Térmica / Eléctrica (350 kW MGU-K):</strong>
+                            <span>La entrega instantánea de 475 CV eléctricos compensa el peso y maximiza las aceleraciones en sectores de baja/media velocidad.</span>
+                        </div>
+                    </li>
+                    <li class="bg-gray-950 p-3 rounded-lg border border-gray-800 flex items-start gap-2">
+                        <i class="fa-solid fa-check text-green-400 mt-0.5"></i>
+                        <div>
+                            <strong class="text-white block">Rendimiento según la Tabla de Constructores:</strong>
+                            <span>El simulador aplica el diferencial de rendimiento según el ranking del campeonato 2026 (Mercedes 620 pts, Ferrari 403 pts, McLaren 337 pts, Red Bull 287 pts).</span>
+                        </div>
+                    </li>
+                    <li class="bg-gray-950 p-3 rounded-lg border border-gray-800 flex items-start gap-2">
+                        <i class="fa-solid fa-check text-green-400 mt-0.5"></i>
+                        <div>
+                            <strong class="text-white block">Pirelli 2026 & Eficiencia de Frenada:</strong>
+                            <span>Los compuestos optimizados de 2026 desaceleran de 330 km/h a 80 km/h en 1.8s recargando las baterías en las zonas más exigentes.</span>
+                        </div>
+                    </li>
+                `;
+            }
+        }
+
+
+        function formatTime(sec) {
+            if (!sec || isNaN(sec)) return "0:00.000";
+            const mins = Math.floor(sec / 60);
+            const remSec = (sec % 60).toFixed(3);
+            return `${mins}:${remSec < 10 ? '0' : ''}${remSec}`;
+        }
+
+        function switchTab(tabId) {
+            ['sim', 'standings', 'calendar'].forEach(t => {
+                const content = document.getElementById(`content-${t}`);
+                const tabBtn = document.getElementById(`tab-${t}`);
+                if (content) {
+                    if (t === tabId) {
+                        content.classList.remove('hidden');
+                    } else {
+                        content.classList.add('hidden');
+                    }
+                }
+                if (tabBtn) {
+                    if (t === tabId) {
+                        tabBtn.className = 'tab-btn px-3 sm:px-4 py-2 rounded-lg transition-all bg-f1-red text-white shadow';
+                    } else {
+                        tabBtn.className = 'tab-btn px-3 sm:px-4 py-2 rounded-lg transition-all text-gray-400 hover:text-white hover:bg-gray-800';
+                    }
+                }
+            });
+        }
+
+        function toggleStandingsSubTab(sub) {
+            const driversTab = document.getElementById('subtab-drivers');
+            const constructorsTab = document.getElementById('subtab-constructors');
+            const btnDrivers = document.getElementById('btn-sub-drivers');
+            const btnConstructors = document.getElementById('btn-sub-constructors');
+
+            if (sub === 'drivers') {
+                driversTab.classList.remove('hidden');
+                constructorsTab.classList.add('hidden');
+                btnDrivers.className = 'px-4 py-2 rounded-lg bg-f1-red text-white font-bold text-xs font-orbitron';
+                btnConstructors.className = 'px-4 py-2 rounded-lg bg-gray-800 text-gray-300 font-bold text-xs font-orbitron hover:bg-gray-700';
+            } else {
+                driversTab.classList.add('hidden');
+                constructorsTab.classList.remove('hidden');
+                btnConstructors.className = 'px-4 py-2 rounded-lg bg-f1-red text-white font-bold text-xs font-orbitron';
+                btnDrivers.className = 'px-4 py-2 rounded-lg bg-gray-800 text-gray-300 font-bold text-xs font-orbitron hover:bg-gray-700';
+            }
+        }
+
+        function renderDriversStandings() {
+            const tbody = document.getElementById('drivers-standings-body');
+            if (!tbody) return;
+
+            tbody.innerHTML = driversList.map((d, index) => `
+                <tr onclick="openDriverModal(${index})" class="hover:bg-gray-800/50 cursor-pointer transition border-b border-gray-800/60">
+                    <td class="p-3 text-center font-orbitron font-bold text-gray-300">${d.pos}</td>
+                    <td class="p-3 font-semibold text-white flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full inline-block" style="background-color: ${d.color}"></span>
+                        ${d.name}
+                    </td>
+                    <td class="p-3 text-gray-400 text-xs">${d.team}</td>
+                    <td class="p-3 text-center font-mono text-gray-300">${d.wins}</td>
+                    <td class="p-3 text-center font-mono text-gray-300">${d.poles}</td>
+                    <td class="p-3 text-right pr-6 font-orbitron font-bold text-yellow-400">${d.points}</td>
+                </tr>
+            `).join('');
+
+            renderConstructorsStandings();
+        }
+
+        function renderConstructorsStandings() {
+            const tbody = document.getElementById('constructors-standings-body');
+            if (!tbody) return;
+
+            tbody.innerHTML = constructorsList.map(c => `
+                <tr class="hover:bg-gray-800/50 transition border-b border-gray-800/60">
+                    <td class="p-3 text-center font-orbitron font-bold text-gray-300">${c.pos}</td>
+                    <td class="p-3 font-semibold text-white flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full inline-block" style="background-color: ${c.color}"></span>
+                        ${c.team}
+                    </td>
+                    <td class="p-3 text-gray-400 text-xs">${c.engine}</td>
+                    <td class="p-3 text-center font-mono text-gray-300">${c.wins}</td>
+                    <td class="p-3 text-center font-mono text-gray-300">${c.podiums}</td>
+                    <td class="p-3 text-right pr-6 font-orbitron font-bold text-cyan-400">${c.points}</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderCalendarGrid() {
+            const grid = document.getElementById('calendar-grid');
+            if (!grid) return;
+
+            grid.innerHTML = calendarRounds.map(r => {
+                const isPast = r.completed;
+                const statusBg = isPast ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+                const statusText = isPast ? 'COMPLETADO' : 'PRÓXIMO';
+
+                return `
+                    <div onclick="openRaceModal(${r.round})" class="glass-panel p-4 rounded-xl cursor-pointer hover:border-gray-500 transition space-y-3 flex flex-col justify-between">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="text-[10px] font-orbitron font-bold text-f1-red">ROUND ${r.round}</span>
+                                <h3 class="font-orbitron font-bold text-base text-white flex items-center gap-2">
+                                    <span>${r.flag}</span> ${r.name}
+                                </h3>
+                                <p class="text-xs text-gray-400">${r.location} | ${r.dates}</p>
+                            </div>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold border ${statusBg}">
+                                ${statusText}
+                            </span>
+                        </div>
+
+                        ${isPast ? `
+                            <div class="bg-gray-950 p-2.5 rounded-lg border border-gray-800 text-xs space-y-1">
+                                <div class="text-gray-400 text-[10px] font-orbitron uppercase">PODIO OFICIAL</div>
+                                <div class="text-white font-semibold flex justify-between">
+                                    <span>🥇 ${r.podium[0]}</span>
+                                    <span class="text-gray-400 text-[11px]">${r.teams[0]}</span>
+                                </div>
+                            </div>
+                        ` : `
+                            <div class="bg-gray-950 p-2.5 rounded-lg border border-gray-800 text-xs">
+                                <span class="text-gray-400 text-[10px] font-orbitron uppercase block">EQUIPO FAVORITO</span>
+                                <span class="text-yellow-400 font-bold">${r.dominant}</span>
+                            </div>
+                        `}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openDriverModal(index) {
+            const driver = driversList[index];
+            if (!driver) return;
+
+            document.getElementById('modal-driver-color').style.backgroundColor = driver.color;
+            document.getElementById('modal-driver-color').innerText = `#${driver.pos}`;
+            document.getElementById('modal-driver-name').innerText = driver.name;
+            document.getElementById('modal-driver-team').innerText = driver.team;
+            document.getElementById('modal-driver-pts').innerText = driver.points;
+            document.getElementById('modal-driver-wins').innerText = driver.wins;
+            document.getElementById('modal-driver-poles').innerText = driver.poles;
+            document.getElementById('modal-driver-bio').innerText = driver.bio;
+
+            document.getElementById('driver-modal').classList.remove('hidden');
+        }
+
+        function closeDriverModal() {
+            document.getElementById('driver-modal').classList.add('hidden');
+        }
+
+        function openRaceModal(roundNum) {
+            const race = calendarRounds.find(r => r.round === roundNum);
+            if (!race) return;
+
+            document.getElementById('modal-race-round').innerText = `ROUND ${race.round}`;
+            document.getElementById('modal-race-title').innerText = `${race.flag} ${race.name}`;
+            document.getElementById('modal-race-date').innerText = `${race.dates} 2026 | ${race.location}`;
+
+            const badge = document.getElementById('modal-race-status-badge');
+            const pastContent = document.getElementById('modal-race-past-content');
+            const upcomingContent = document.getElementById('modal-race-upcoming-content');
+
+            if (race.completed) {
+                badge.className = "px-2.5 py-0.5 rounded text-[10px] font-bold font-orbitron bg-green-500/20 text-green-400 border border-green-500/30";
+                badge.innerText = "COMPLETADO";
+
+                pastContent.classList.remove('hidden');
+                upcomingContent.classList.add('hidden');
+
+                document.getElementById('podium-1st').innerText = race.podium[0];
+                document.getElementById('podium-1st-team').innerText = race.teams[0];
+                document.getElementById('podium-2nd').innerText = race.podium[1];
+                document.getElementById('podium-2nd-team').innerText = race.teams[1];
+                document.getElementById('podium-3rd').innerText = race.podium[2];
+                document.getElementById('podium-3rd-team').innerText = race.teams[2];
+                document.getElementById('fastest-lap-driver').innerText = race.fastestLap || "N/A";
+            } else {
+                badge.className = "px-2.5 py-0.5 rounded text-[10px] font-bold font-orbitron bg-yellow-500/20 text-yellow-400 border border-yellow-500/30";
+                badge.innerText = "PRÓXIMO GP";
+
+                pastContent.classList.add('hidden');
+                upcomingContent.classList.remove('hidden');
+
+                document.getElementById('modal-race-schedules').innerHTML = `
+                    <div class="bg-gray-950 p-2 rounded border border-gray-800"><span class="text-gray-400 block text-[10px]">LIBRES 1 & 2</span> Viernes 13:30 / 17:00</div>
+                    <div class="bg-gray-950 p-2 rounded border border-gray-800"><span class="text-gray-400 block text-[10px]">LIBRES 3 & CLASI</span> Sábado 12:30 / 16:00</div>
+                    <div class="bg-gray-950 p-2 rounded border border-gray-800 col-span-2"><span class="text-gray-400 block text-[10px]">CARRERA PRINCIPAL</span> Domingo 15:00 CET</div>
+                `;
+
+                document.getElementById('modal-race-dominant-team').innerText = race.dominant;
+                document.getElementById('modal-race-dominant-reason').innerText = race.reason;
+            }
+
+            document.getElementById('race-modal').classList.remove('hidden');
+        }
+
+        function closeRaceModal() {
+            document.getElementById('race-modal').classList.add('hidden');
+        }
+
+        window.onload = function() {
+            onEraChange();
+            renderDriversStandings();
+            renderCalendarGrid();
+            calculateAndRenderResults();
+        };
+    </script>
+</body>
+</html>
